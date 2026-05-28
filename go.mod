@@ -1,4 +1,4 @@
-module becs-runner
+module github.com/zen66ten/tcl-batch-runner
 
 go 1.22
 

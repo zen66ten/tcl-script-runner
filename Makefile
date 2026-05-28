@@ -1,5 +1,5 @@
 BINARY := becs-runner
-CMD     := ./cmd/becs-runner
+CMD     := ./cmd
 
 .PHONY: build build-windows run clean
 

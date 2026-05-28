@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"becs-runner/internal/becs"
+	"github.com/zen66ten/tcl-batch-runner/internal/becs"
 )
 
 // RunStatus is the outcome of a single Run.

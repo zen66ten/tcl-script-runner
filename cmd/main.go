@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"becs-runner/internal/config"
-	"becs-runner/internal/runner"
-	"becs-runner/internal/web"
+	"github.com/zen66ten/tcl-batch-runner/internal/config"
+	"github.com/zen66ten/tcl-batch-runner/internal/runner"
+	"github.com/zen66ten/tcl-batch-runner/internal/web"
 )
 
 func main() {
