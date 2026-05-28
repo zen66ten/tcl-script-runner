@@ -136,5 +136,4 @@ accumulate as JSON files in `jobs/`.
 
 ## License
 
-No license has been applied yet. Add one (e.g. MIT) before sharing this
-publicly if you want others to be able to use it.
+Do not distribute.
