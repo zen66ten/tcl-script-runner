@@ -1,0 +1,59 @@
+# Example configuration for becs-runner.
+#
+# Copy this file to "config.yaml" in your data directory, OR just add
+# environments through the web UI (which writes config.yaml for you).
+#
+# The real config.yaml is gitignored on purpose: it stores credentials
+# encrypted at rest (AES-256-GCM, key derived from BECS_RUNNER_KEY) and holds
+# host/IP details you probably don't want in version control. Leave the
+# password / key fields blank here and set them via the UI so they get
+# encrypted correctly.
+
+poll_interval_seconds: 5
+default_timeout_seconds: 300
+
+environments:
+  # --- Direct connection, no tunnel ---
+  - name: example-direct
+    becs_host: 127.0.0.1
+    becs_port: 4499
+    username: root
+    password: ""            # set via the UI (stored encrypted)
+    tunnel_type: none
+    enabled: false
+
+  # --- Through an SSH port-forward ---
+  - name: example-ssh
+    becs_host: 127.0.0.1     # reached via the local end of the tunnel
+    becs_port: 4499
+    username: root
+    password: ""
+    tunnel_type: ssh
+    ssh_tunnel:
+      ssh_host: jump.example.com
+      ssh_port: 22
+      ssh_user: youruser
+      ssh_auth_method: password   # or "key"
+      ssh_key_path: ""
+      ssh_password: ""            # set via the UI (stored encrypted)
+      local_port: 14499
+      remote_host: localhost      # target host as seen from the jump host
+      remote_port: 4499
+    enabled: false
+
+  # --- Through a userspace WireGuard tunnel ---
+  - name: example-wireguard
+    becs_host: 10.0.0.10
+    becs_port: 4499
+    username: root
+    password: ""
+    tunnel_type: wireguard
+    wireguard:
+      wg_private_key: ""          # set via the UI (stored encrypted)
+      wg_peer_public_key: ""
+      wg_endpoint: vpn.example.com:51820
+      wg_allowed_ips: 10.0.0.0/24
+      wg_address: 10.0.0.2/32
+      wg_dns: 8.8.8.8
+      wg_persistent_keepalive: 25
+    enabled: false

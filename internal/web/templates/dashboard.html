@@ -1,0 +1,64 @@
+{{define "content"}}
+<h1>Dashboard</h1>
+
+{{if .Busy}}
+<p class="status-err"><strong>A job is currently running.</strong> Wait for it to complete before starting another.</p>
+{{end}}
+
+<form hx-post="/run" hx-target="body" hx-push-url="true" hx-indicator="#run-indicator">
+  <article>
+    <header><strong>Run batch_accounting.tcl</strong></header>
+    <div class="grid">
+      <label>svc_list
+        <input type="text" name="svc_list" placeholder="e.g. svc1 svc2">
+      </label>
+      <label>parentoid
+        <input type="text" name="parentoid" placeholder="e.g. 12345">
+      </label>
+    </div>
+    <fieldset>
+      <legend>Environments</legend>
+      {{if .Envs}}
+        {{range .Envs}}
+        {{if .Enabled}}
+        <label>
+          <input type="checkbox" name="env" value="{{.Name}}" checked>
+          {{.Name}}
+        </label>
+        {{end}}
+        {{end}}
+      {{else}}
+        <p><em>No environments configured. <a href="/environments/new">Add one.</a></em></p>
+      {{end}}
+    </fieldset>
+    <footer>
+      <button type="submit" {{if .Busy}}disabled aria-busy="true"{{end}}>{{if .Busy}}Job running…{{else}}Run Selected{{end}}</button>
+      <span id="run-indicator" class="htmx-indicator" aria-busy="true"> Running…</span>
+    </footer>
+  </article>
+</form>
+
+{{if .RecentJobs}}
+<h2>Recent Jobs</h2>
+<table>
+  <thead><tr><th>Time</th><th>Script</th><th>Environments</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+    {{range .RecentJobs}}
+    <tr>
+      <td>{{fmtTime .StartedAt}}</td>
+      <td>{{.Script}}</td>
+      <td>{{range .Runs}}{{.Environment}} {{end}}</td>
+      <td>
+        {{range .Runs}}
+          <span {{if eq .Status "finished"}}class="status-ok"{{else if eq .Status "error"}}class="status-err"{{else}}class="status-fail"{{end}}>
+            {{statusIcon .Status}}
+          </span>
+        {{end}}
+      </td>
+      <td><a href="/jobs/{{.ID}}">View</a></td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+{{end}}

@@ -1,0 +1,15 @@
+# --- Local data: never publish (live credentials, hostnames, keys, output) ---
+/config.yaml
+/jobs/
+
+# --- Internal docs: kept locally, not published ---
+/SPEC-becs-runner.md
+/CLAUDE.md
+
+# --- Build artifacts ---
+/becs-runner
+*.exe
+
+# --- Local tooling / editor ---
+/.claude/
+/.vscode/

@@ -1,0 +1,52 @@
+{{define "content"}}
+<div style="display:flex; justify-content:space-between; align-items:center">
+  <h1>Job {{.Job.ID}}</h1>
+  <a href="/jobs">← Job Log</a>
+</div>
+
+{{if inProgress .Job.FinishedAt}}
+<p aria-busy="true"><strong>Running…</strong> This page refreshes automatically.</p>
+<script>setTimeout(() => location.reload(), 3000)</script>
+{{end}}
+
+<article>
+  <header><strong>{{.Job.Script}}</strong></header>
+  <div class="grid">
+    <div><strong>Started</strong><br>{{fmtTime .Job.StartedAt}}</div>
+    <div><strong>Finished</strong><br>{{if inProgress .Job.FinishedAt}}<em>in progress…</em>{{else}}{{fmtTime .Job.FinishedAt}}{{end}}</div>
+    <div><strong>Duration</strong><br>{{fmtDuration .Job.StartedAt .Job.FinishedAt}}{{if inProgress .Job.FinishedAt}}…{{end}}</div>
+  </div>
+  {{if .Job.Variables}}
+  <footer>
+    <strong>Variables:</strong>
+    {{range .Job.Variables}} {{.Name}}={{.Value}} {{end}}
+  </footer>
+  {{end}}
+</article>
+
+{{range .Job.Runs}}
+<article>
+  <header>
+    <span {{if eq .Status "finished"}}class="status-ok"{{else if eq .Status "error"}}class="status-err"{{else}}class="status-fail"{{end}}>
+      {{statusIcon .Status}}
+    </span>
+    <strong>{{.Environment}}</strong>
+    <small style="float:right">{{fmtDuration .StartedAt .FinishedAt}} · batch {{.BatchID}}</small>
+  </header>
+
+  {{if .Err}}
+  <p class="status-err">{{.Err}}</p>
+  {{end}}
+
+  {{if .Output}}
+  <pre>{{.Output}}</pre>
+  {{end}}
+
+  {{if .Output}}
+  <footer>
+    <a href="/jobs/{{$.Job.ID}}/runs/{{.Environment}}/download" role="button" class="secondary outline" style="width:auto" hx-boost="false">Download .txt</a>
+  </footer>
+  {{end}}
+</article>
+{{end}}
+{{end}}

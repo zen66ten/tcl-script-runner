@@ -1,0 +1,145 @@
+{{define "layout"}}<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>becs-runner</title>
+  <script>
+    // Apply saved theme before paint to avoid a flash.
+    (function () {
+      var t = localStorage.getItem("theme") || "dark";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+  <style>
+    :root {
+      --accent:        #e64980;
+      --accent-hover:  #f06595;
+    }
+
+    /* ── Dark theme: neutral charcoal + pink accent ─────────────── */
+    [data-theme="dark"] {
+      --pico-background-color:                    #1b1b1f;
+      --pico-color:                               #c7c7cf;
+      --pico-muted-color:                         #82828c;
+      --pico-muted-border-color:                  #2c2c33;
+      --pico-border-color:                        #2c2c33;
+
+      --pico-h1-color:                            #e9e9ef;
+      --pico-h2-color:                            var(--accent);
+      --pico-h3-color:                            var(--accent);
+      --pico-h4-color:                            #d7d7df;
+      --pico-h5-color:                            #d7d7df;
+      --pico-h6-color:                            #d7d7df;
+
+      --pico-card-background-color:               #232329;
+      --pico-card-sectioning-background-color:    #1f1f24;
+      --pico-card-border-color:                   #2c2c33;
+
+      --pico-form-element-background-color:       #1f1f24;
+      --pico-form-element-border-color:           #34343c;
+      --pico-form-element-color:                  #e3e3ea;
+      --pico-form-element-placeholder-color:      #6f6f78;
+      --pico-form-element-active-background-color:#1f1f24;
+      --pico-form-element-focus-color:            var(--accent);
+
+      --pico-code-background-color:               #232329;
+      --pico-code-color:                          #d0d0d8;
+
+      --pico-table-border-color:                  #2c2c33;
+    }
+
+    /* ── Pink primary (links + buttons), both themes ────────────── */
+    :root, [data-theme="dark"] {
+      --pico-primary:                  var(--accent);
+      --pico-primary-background:       var(--accent);
+      --pico-primary-border:           var(--accent);
+      --pico-primary-hover:            var(--accent-hover);
+      --pico-primary-hover-background: var(--accent-hover);
+      --pico-primary-hover-border:     var(--accent-hover);
+      --pico-primary-focus:            rgba(230, 73, 128, 0.3);
+      --pico-primary-inverse:          #ffffff;
+      --pico-primary-underline:        rgba(230, 73, 128, 0.4);
+    }
+
+    /* ── Nav ────────────────────────────────────────────────────── */
+    nav { padding: 0.5rem 1rem; }
+    nav .logo {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.15rem;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+    nav a:not(.logo) {
+      color: var(--pico-muted-color);
+      text-decoration: none;
+      --pico-text-decoration: none;
+    }
+    nav a:not(.logo):hover,
+    nav a:not(.logo):focus { color: var(--accent); }
+    .theme-toggle {
+      background: none;
+      border: none;
+      padding: 0.2rem 0.4rem;
+      margin: 0;
+      width: auto;
+      cursor: pointer;
+      color: var(--pico-muted-color);
+      line-height: 1;
+    }
+    .theme-toggle:hover { color: var(--accent); }
+
+    /* ── Misc ───────────────────────────────────────────────────── */
+    .status-ok   { color: var(--pico-color-green-500); }
+    .status-fail { color: var(--pico-color-red-500); }
+    .status-err  { color: var(--pico-color-orange-500); }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.85em;
+      border: 1px solid var(--pico-border-color);
+      border-left: 3px solid var(--accent);
+    }
+    .htmx-indicator { display: none; }
+    .htmx-request .htmx-indicator { display: inline; }
+    .htmx-request.htmx-indicator  { display: inline; }
+  </style>
+</head>
+<body hx-boost="true">
+  <nav class="container-fluid">
+    <ul>
+      <li><a href="/" class="logo">becs-runner</a></li>
+      <li>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark">
+          <span id="theme-icon">☾</span>
+        </button>
+      </li>
+    </ul>
+    <ul>
+      <li><a href="/">Dashboard</a></li>
+      <li><a href="/environments">Environments</a></li>
+      <li><a href="/jobs">Job Log</a></li>
+    </ul>
+  </nav>
+  <main class="container">
+    {{block "content" .}}{{end}}
+  </main>
+  <script>
+    function applyThemeIcon() {
+      var dark = document.documentElement.getAttribute("data-theme") !== "light";
+      var icon = document.getElementById("theme-icon");
+      if (icon) icon.textContent = dark ? "☾" : "☀";
+    }
+    function toggleTheme() {
+      var next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+      applyThemeIcon();
+    }
+    applyThemeIcon();
+  </script>
+</body>
+</html>{{end}}

@@ -1,0 +1,137 @@
+{{define "content"}}
+<h1>{{if .IsNew}}New Environment{{else}}Edit: {{.Env.Name}}{{end}}</h1>
+
+{{if .Err}}<p class="status-fail">{{.Err}}</p>{{end}}
+
+<form method="POST" action="{{if .IsNew}}/environments{{else}}/environments/{{.Env.Name}}/edit{{end}}">
+  <article>
+    <header><strong>BECS Connection</strong></header>
+    <div class="grid">
+      <label>Name
+        <input type="text" name="name" value="{{.Env.Name}}" required {{if not .IsNew}}readonly{{end}}>
+      </label>
+      <label>Enabled
+        <input type="checkbox" name="enabled" {{if .Env.Enabled}}checked{{end}}>
+      </label>
+    </div>
+    <div class="grid">
+      <label>BECS Host
+        <input type="text" name="becs_host" value="{{.Env.BECSHost}}" placeholder="127.0.0.1" required>
+      </label>
+      <label>BECS Port
+        <input type="number" name="becs_port" value="{{.Env.BECSPort}}" placeholder="4499">
+      </label>
+    </div>
+    <div class="grid">
+      <label>Username
+        <input type="text" name="username" value="{{.Env.Username}}" required>
+      </label>
+      <label>Password
+        <input type="password" name="password" {{if not .IsNew}}placeholder="leave blank to keep existing"{{end}}>
+      </label>
+    </div>
+    <label>Notes
+      <input type="text" name="notes" value="{{.Env.Notes}}">
+    </label>
+  </article>
+
+  <article>
+    <header><strong>Tunnel</strong></header>
+    <label>Type
+      <select name="tunnel_type" id="tunnel_type" onchange="setTunnel(this.value)">
+        <option value="none"      {{if eq .Env.TunnelType "none"}}selected{{end}}>None</option>
+        <option value="ssh"       {{if eq .Env.TunnelType "ssh"}}selected{{end}}>SSH</option>
+        <option value="wireguard" {{if eq .Env.TunnelType "wireguard"}}selected{{end}}>WireGuard</option>
+      </select>
+    </label>
+
+    <section id="ssh-section">
+      <h4>SSH Tunnel</h4>
+      <div class="grid">
+        <label>Jump Host
+          <input type="text" name="ssh_host" value="{{.Env.SSH.Host}}">
+        </label>
+        <label>Port
+          <input type="number" name="ssh_port" value="{{.Env.SSH.Port}}" placeholder="22">
+        </label>
+      </div>
+      <div class="grid">
+        <label>SSH User
+          <input type="text" name="ssh_user" value="{{.Env.SSH.User}}">
+        </label>
+        <label>Auth Method
+          <select name="ssh_auth_method">
+            <option value="password" {{if ne .Env.SSH.AuthMethod "key"}}selected{{end}}>Password</option>
+            <option value="key"      {{if eq .Env.SSH.AuthMethod "key"}}selected{{end}}>Key</option>
+          </select>
+        </label>
+        <label>SSH Password
+          <input type="password" name="ssh_password" placeholder="{{if not .IsNew}}leave blank to keep existing{{end}}">
+        </label>
+      </div>
+      <div class="grid">
+        <label>Local Port
+          <input type="number" name="local_port" value="{{.Env.SSH.LocalPort}}" placeholder="e.g. 14499">
+        </label>
+        <label>Remote Host
+          <input type="text" name="remote_host" value="{{.Env.SSH.RemoteHost}}" placeholder="BECS host as seen from jump">
+        </label>
+        <label>Remote Port
+          <input type="number" name="remote_port" value="{{.Env.SSH.RemotePort}}" placeholder="4499">
+        </label>
+      </div>
+    </section>
+
+    <section id="wg-section">
+      <h4>WireGuard</h4>
+      <div class="grid">
+        <label>Local Address
+          <input type="text" name="wg_address" value="{{.Env.WireGuard.Address}}" placeholder="10.0.0.2">
+        </label>
+        <label>Endpoint
+          <input type="text" name="wg_endpoint" value="{{.Env.WireGuard.Endpoint}}" placeholder="vpn.host:51820">
+        </label>
+      </div>
+      <div class="grid">
+        <label>Private Key (base64)
+          <input type="password" name="wg_private_key" placeholder="{{if not .IsNew}}leave blank to keep existing{{end}}">
+        </label>
+        <label>Peer Public Key (base64)
+          <input type="text" name="wg_peer_public_key" value="{{.Env.WireGuard.PeerPublicKey}}">
+        </label>
+      </div>
+      <div class="grid">
+        <label>Allowed IPs
+          <input type="text" name="wg_allowed_ips" value="{{.Env.WireGuard.AllowedIPs}}" placeholder="10.0.0.0/24">
+        </label>
+        <label>DNS
+          <input type="text" name="wg_dns" value="{{.Env.WireGuard.DNS}}" placeholder="optional">
+        </label>
+      </div>
+      <div class="grid">
+        <label>Preshared Key (base64, optional)
+          <input type="password" name="wg_preshared_key" placeholder="optional">
+        </label>
+        <label>Persistent Keepalive (s)
+          <input type="number" name="wg_persistent_keepalive" value="{{.Env.WireGuard.PersistentKeepalive}}" placeholder="0">
+        </label>
+      </div>
+    </section>
+  </article>
+
+  <div style="display:flex; gap:1rem">
+    <button type="submit">{{if .IsNew}}Create{{else}}Save{{end}}</button>
+    <a href="/environments" role="button" class="secondary outline">Cancel</a>
+  </div>
+</form>
+
+<script>
+function setTunnel(v) {
+  document.getElementById('ssh-section').style.display = v === 'ssh' ? '' : 'none';
+  document.getElementById('wg-section').style.display  = v === 'wireguard' ? '' : 'none';
+}
+window.addEventListener('DOMContentLoaded', function() {
+  setTunnel(document.getElementById('tunnel_type').value);
+});
+</script>
+{{end}}

@@ -1,0 +1,43 @@
+{{define "content"}}
+<h1>Job Log</h1>
+
+{{if .Jobs}}
+<table>
+  <thead>
+    <tr>
+      <th>Started</th>
+      <th>Script</th>
+      <th>Environments</th>
+      <th>Duration</th>
+      <th>Result</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Jobs}}
+    <tr>
+      <td>{{fmtTime .StartedAt}}</td>
+      <td>{{.Script}}</td>
+      <td>
+        {{range .Runs}}
+        <span {{if eq .Status "finished"}}class="status-ok"{{else if eq .Status "error"}}class="status-err"{{else}}class="status-fail"{{end}}>
+          {{statusIcon .Status}} {{.Environment}}
+        </span><br>
+        {{end}}
+      </td>
+      <td>{{fmtDuration .StartedAt .FinishedAt}}</td>
+      <td>
+        {{range .Runs}}
+          {{if .Output}}<small>{{snippet .Output}}</small>{{end}}
+          {{if .Err}}<small class="status-err">{{snippet .Err}}</small>{{end}}
+        {{end}}
+      </td>
+      <td><a href="/jobs/{{.ID}}">Detail</a></td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{else}}
+<p>No jobs yet. Run something from the <a href="/">Dashboard</a>.</p>
+{{end}}
+{{end}}

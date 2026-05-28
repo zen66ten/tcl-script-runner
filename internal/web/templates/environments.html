@@ -1,0 +1,42 @@
+{{define "content"}}
+<div style="display:flex; justify-content:space-between; align-items:center">
+  <h1>Environments</h1>
+  <a href="/environments/new" role="button">+ Add</a>
+</div>
+
+{{if .Msg}}<p><em>{{.Msg}}</em></p>{{end}}
+
+{{if .Envs}}
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Host</th>
+      <th>Tunnel</th>
+      <th>Enabled</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Envs}}
+    <tr>
+      <td>{{.Name}}</td>
+      <td>{{.BECSHost}}:{{.BECSPort}}</td>
+      <td>{{.TunnelType}}</td>
+      <td>{{if .Enabled}}✓{{else}}—{{end}}</td>
+      <td>
+        <a href="/environments/{{.Name}}/edit">Edit</a>
+        &nbsp;
+        <form method="POST" action="/environments/{{.Name}}/delete" style="display:inline" hx-boost="false">
+          <button type="submit" class="outline secondary" style="padding:0.2rem 0.6rem"
+                  onclick="return confirm('Delete {{.Name}}?')">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{end}}
+  </tbody>
+</table>
+{{else}}
+<p>No environments yet. <a href="/environments/new">Add one.</a></p>
+{{end}}
+{{end}}
