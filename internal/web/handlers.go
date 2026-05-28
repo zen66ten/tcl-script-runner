@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/zen66ten/tcl-batch-runner/internal/becs"
-	"github.com/zen66ten/tcl-batch-runner/internal/config"
-	"github.com/zen66ten/tcl-batch-runner/internal/runner"
+	"github.com/zen66ten/tcl-script-runner/internal/becs"
+	"github.com/zen66ten/tcl-script-runner/internal/config"
+	"github.com/zen66ten/tcl-script-runner/internal/runner"
 )
 
 //go:embed templates

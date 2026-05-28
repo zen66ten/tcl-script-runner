@@ -7,7 +7,7 @@
 /CLAUDE.md
 
 # --- Build artifacts ---
-/becs-runner
+/tcl-script-runner
 *.exe
 
 # --- Local tooling / editor ---

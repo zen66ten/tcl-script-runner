@@ -10,7 +10,7 @@ import (
 
 	"golang.org/x/crypto/ssh"
 
-	"github.com/zen66ten/tcl-batch-runner/internal/config"
+	"github.com/zen66ten/tcl-script-runner/internal/config"
 )
 
 // SSH implements Tunnel via an SSH port-forward:

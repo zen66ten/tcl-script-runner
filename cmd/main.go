@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/zen66ten/tcl-batch-runner/internal/config"
-	"github.com/zen66ten/tcl-batch-runner/internal/runner"
-	"github.com/zen66ten/tcl-batch-runner/internal/web"
+	"github.com/zen66ten/tcl-script-runner/internal/config"
+	"github.com/zen66ten/tcl-script-runner/internal/runner"
+	"github.com/zen66ten/tcl-script-runner/internal/web"
 )
 
 func main() {
@@ -42,7 +42,7 @@ func main() {
 	mux := http.NewServeMux()
 	app.RegisterRoutes(mux)
 
-	slog.Info("becs-runner starting", "listen", *listen, "data-dir", *dataDir)
+	slog.Info("tcl-script-runner starting", "listen", *listen, "data-dir", *dataDir)
 	if err := http.ListenAndServe(*listen, mux); err != nil {
 		slog.Error("server error", "err", err)
 		os.Exit(1)

@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zen66ten/tcl-batch-runner/internal/becs"
-	"github.com/zen66ten/tcl-batch-runner/internal/config"
-	"github.com/zen66ten/tcl-batch-runner/internal/tunnel"
+	"github.com/zen66ten/tcl-script-runner/internal/becs"
+	"github.com/zen66ten/tcl-script-runner/internal/config"
+	"github.com/zen66ten/tcl-script-runner/internal/tunnel"
 )
 
 // Runner orchestrates serial batch execution across environments (spec §3.4.3).

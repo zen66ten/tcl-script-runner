@@ -1,4 +1,4 @@
-module github.com/zen66ten/tcl-batch-runner
+module github.com/zen66ten/tcl-script-runner
 
 go 1.22
 

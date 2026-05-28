@@ -1,4 +1,4 @@
-BINARY := becs-runner
+BINARY := tcl-script-runner
 CMD     := ./cmd
 
 .PHONY: build build-windows run clean

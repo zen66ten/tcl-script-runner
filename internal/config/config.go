@@ -19,7 +19,7 @@ const (
 )
 
 // SSHTunnelConfig holds parameters for an SSH port-forward tunnel (spec 3.2.1).
-// ssh_key_path is a path on the machine running becs-runner; use filepath when
+// ssh_key_path is a path on the machine running tcl-script-runner; use filepath when
 // handling it to stay Windows-compatible.
 type SSHTunnelConfig struct {
 	Host       string `yaml:"ssh_host"`

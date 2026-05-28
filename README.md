@@ -1,12 +1,12 @@
-# becs-runner
+# tcl-script-runner
 
 A small, self-contained web app for running TCL batch scripts across multiple
 remote environments without the manual SSH + `curl` dance.
 
 If you run the same batch scripts against more than one environment, you
 probably know the routine: SSH into a box, `curl` a login, `curl` the batch run,
-poll for completion, fetch the result, `curl` a logout — then repeat for the
-next environment. becs-runner does that for you from a single page.
+poll for completion, fetch the result, `curl` a logout, then repeat for the next
+environment. tcl-script-runner does that for you from a single page.
 
 It talks to each environment over its JSON-RPC API (port 4499), establishes any
 required SSH or WireGuard tunnel first, runs the script, polls for completion,
@@ -14,27 +14,27 @@ and stores each result as a job log you can review later.
 
 ## What it does
 
-- **Environment management** — add/edit/remove target environments (host, port,
+- **Environment management:** add/edit/remove target environments (host, port,
   credentials, tunnel settings) through a web UI. Credentials are encrypted at
   rest.
-- **Tunnels** — connects through an **SSH** port-forward or a **userspace
-  WireGuard** tunnel before reaching the API. No root, no kernel module,
-  no TUN device — WireGuard runs in-process via `wireguard/tun/netstack`.
-- **Batch execution** — runs a TCL batch script against the environments you
+- **Tunnels:** connects through an **SSH** port-forward or a **userspace
+  WireGuard** tunnel before reaching the API. No root, no kernel module, and no
+  TUN device, because WireGuard runs in-process via `wireguard/tun/netstack`.
+- **Batch execution:** runs a TCL batch script against the environments you
   select, one at a time, polling until each finishes.
-- **Job log** — every run is saved as a JSON file under `jobs/`, with output and
+- **Job log:** every run is saved as a JSON file under `jobs/`, with output and
   timing, viewable and downloadable from the UI.
 
 ## Who it's for
 
-This is a **niche operations tool** for engineers who run the same TCL batch
-scripts against one or more remote environments and are tired of doing it by
-hand. It's the kind of thing you run on your own workstation or a small internal
-box to save yourself the repetitive SSH/curl loop.
+This is a niche operations tool for engineers who run the same TCL batch scripts
+against one or more remote environments and are tired of doing it by hand. It's
+the kind of thing you run on your own workstation or a small internal box to
+save yourself the repetitive SSH/curl loop.
 
 It is **not** a general-purpose automation platform, and it is **not hardened for
 public/multi-user deployment** (see caveats below). It assumes the target
-environments expose a JSON-RPC batch API of the shape it was built against — if
+environments expose a JSON-RPC batch API of the shape it was built against. If
 that doesn't describe your setup, this tool isn't aimed at you.
 
 ## Honest status & caveats
@@ -47,19 +47,19 @@ This is a personal project. The core works end-to-end, but go in with eyes open:
 - **The script is currently hardwired** to `batch_accounting.tcl` with
   `svc_list` / `parentoid` inputs on the dashboard. Running arbitrary scripts
   isn't exposed in the UI yet.
-- **Serial execution only** — one environment (and one tunnel) at a time, by
+- **Serial execution only.** One environment (and one tunnel) at a time, by
   design. This keeps tunnel lifecycle simple, especially for WireGuard.
 - **Lightly tested.** It's been exercised against real environments, but there's
   no automated test suite and the tunnel code in particular hasn't seen broad
   use. Expect rough edges.
-- **A few protocol questions are still open** (e.g. exact file-read encoding,
-  session timeout behavior). These don't block normal use but are noted in the
-  spec.
+- **A few protocol questions are still open** (for example, exact file-read
+  encoding and session timeout behavior). These don't block normal use but are
+  noted in the spec.
 
 ## How it works
 
 ```
-Browser ──HTMX──> becs-runner (Go) ──tunnel?──> Target JSON-RPC API (:4499)
+Browser ──HTMX──> tcl-script-runner (Go) ──tunnel?──> Target JSON-RPC API (:4499)
                        │
                        ├─ config.yaml   (environments; passwords encrypted)
                        └─ jobs/*.json   (one file per job)
@@ -71,28 +71,28 @@ PicoCSS. State lives in `config.yaml` (environments) and the `jobs/` directory
 
 ### Tunnels / VPN
 
-Many environments aren't reachable directly — the JSON-RPC API sits behind a
-jump host or a VPN. becs-runner brings the tunnel up *before* a run and tears it
+Many environments aren't reachable directly: the JSON-RPC API sits behind a jump
+host or a VPN. tcl-script-runner brings the tunnel up *before* a run and tears it
 down *after*, and because runs are serial there's only ever one tunnel active at
 a time. Three modes:
 
-- **None** — connect straight to `becs_host:becs_port`.
+- **None:** connect straight to `becs_host:becs_port`.
 
-- **SSH** — a port-forward built with `golang.org/x/crypto/ssh` (pure Go, no
+- **SSH:** a port-forward built with `golang.org/x/crypto/ssh` (pure Go, no
   shelling out to a system `ssh` binary). It binds a local port and forwards
-  `localhost:<local_port>` → jump host → `<remote_host>:<remote_port>`; the API
-  client then just talks to the local end.
+  `localhost:<local_port>` to the jump host and on to
+  `<remote_host>:<remote_port>`; the API client then just talks to the local
+  end.
 
-- **WireGuard** — a fully **userspace** tunnel via
+- **WireGuard:** a fully **userspace** tunnel via
   [`wireguard-go`](https://git.zx2c4.com/wireguard-go/)'s `tun/netstack`
-  package, which runs on top of **gVisor's netstack** — a userspace TCP/IP
-  stack. This is the key trick: there's no kernel module, no `/dev/net/tun`
-  device, no system network interface, and **no root / `CAP_NET_ADMIN`**
-  required. The netstack `Net` object hands back a `net.Conn` from its
-  `DialContext`, which is wired into a custom `http.Transport`. The practical
-  upshot: only becs-runner's own API traffic goes through the tunnel — your
-  machine's routing table is never touched, so nothing else on the host is
-  affected.
+  package, which runs on top of **gVisor's netstack**, a userspace TCP/IP stack.
+  This is the key trick: there's no kernel module, no `/dev/net/tun` device, no
+  system network interface, and **no root / `CAP_NET_ADMIN`** required. The
+  netstack `Net` object hands back a `net.Conn` from its `DialContext`, which is
+  wired into a custom `http.Transport`. The practical upshot is that only
+  tcl-script-runner's own API traffic goes through the tunnel; your machine's
+  routing table is never touched, so nothing else on the host is affected.
 
 Tunnel credentials (SSH passwords, WireGuard private/preshared keys) are
 encrypted at rest the same way the API login passwords are.
@@ -107,10 +107,10 @@ encrypted at rest the same way the API login passwords are.
 
 ```bash
 # build
-go build -o becs-runner ./cmd        # use ./cmd; on Windows add .exe
+go build -o tcl-script-runner ./cmd        # use ./cmd; on Windows add .exe
 
 # run
-./becs-runner --listen :8080 --data-dir .
+./tcl-script-runner --listen :8080 --data-dir .
 ```
 
 | Flag         | Default | Purpose                                    |
@@ -129,7 +129,7 @@ encrypted at rest using AES-256-GCM with a key derived from a passphrase via
 PBKDF2. Set the passphrase in `BECS_RUNNER_KEY` before starting:
 
 ```powershell
-# Windows / PowerShell — current session
+# Windows / PowerShell, current session
 $env:BECS_RUNNER_KEY = "your-master-passphrase"
 ```
 
@@ -138,7 +138,7 @@ $env:BECS_RUNNER_KEY = "your-master-passphrase"
 export BECS_RUNNER_KEY="your-master-passphrase"
 ```
 
-Use the **same** passphrase every time — if it changes, previously saved
+Use the **same** passphrase every time. If it changes, previously saved
 credentials can no longer be decrypted. If it's unset, the app still starts but
 logs a warning and credential encryption/decryption will fail.
 
@@ -151,7 +151,7 @@ accumulate as JSON files in `jobs/`.
 ## Tech stack
 
 - **Go 1.22**, standard-library HTTP server and `html/template`
-- **HTMX 2.x** for interactivity, **PicoCSS** for styling — no JS
+- **HTMX 2.x** for interactivity, **PicoCSS** for styling, no JS
 - `golang.org/x/crypto/ssh` for SSH tunnels
 - `golang.zx2c4.com/wireguard` (+ `tun/netstack`) for userspace WireGuard
 - AES-256-GCM + PBKDF2 from the standard library for credential encryption

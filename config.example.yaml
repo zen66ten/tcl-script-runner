@@ -1,4 +1,4 @@
-# Example configuration for becs-runner.
+# Example configuration for tcl-script-runner.
 #
 # Copy this file to "config.yaml" in your data directory, OR just add
 # environments through the web UI (which writes config.yaml for you).
