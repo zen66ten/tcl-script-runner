@@ -69,6 +69,34 @@ No database and no JS build step: the UI is Go `html/template` + HTMX +
 PicoCSS. State lives in `config.yaml` (environments) and the `jobs/` directory
 (results).
 
+### Tunnels / VPN
+
+Many environments aren't reachable directly — the JSON-RPC API sits behind a
+jump host or a VPN. becs-runner brings the tunnel up *before* a run and tears it
+down *after*, and because runs are serial there's only ever one tunnel active at
+a time. Three modes:
+
+- **None** — connect straight to `becs_host:becs_port`.
+
+- **SSH** — a port-forward built with `golang.org/x/crypto/ssh` (pure Go, no
+  shelling out to a system `ssh` binary). It binds a local port and forwards
+  `localhost:<local_port>` → jump host → `<remote_host>:<remote_port>`; the API
+  client then just talks to the local end.
+
+- **WireGuard** — a fully **userspace** tunnel via
+  [`wireguard-go`](https://git.zx2c4.com/wireguard-go/)'s `tun/netstack`
+  package, which runs on top of **gVisor's netstack** — a userspace TCP/IP
+  stack. This is the key trick: there's no kernel module, no `/dev/net/tun`
+  device, no system network interface, and **no root / `CAP_NET_ADMIN`**
+  required. The netstack `Net` object hands back a `net.Conn` from its
+  `DialContext`, which is wired into a custom `http.Transport`. The practical
+  upshot: only becs-runner's own API traffic goes through the tunnel — your
+  machine's routing table is never touched, so nothing else on the host is
+  affected.
+
+Tunnel credentials (SSH passwords, WireGuard private/preshared keys) are
+encrypted at rest the same way the API login passwords are.
+
 ## Requirements
 
 - Go 1.22+
