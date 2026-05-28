@@ -151,7 +151,7 @@ accumulate as JSON files in `jobs/`.
 ## Tech stack
 
 - **Go 1.22**, standard-library HTTP server and `html/template`
-- **HTMX 2.x** for interactivity, **PicoCSS** for styling — no JS build step
+- **HTMX 2.x** for interactivity, **PicoCSS** for styling — no JS
 - `golang.org/x/crypto/ssh` for SSH tunnels
 - `golang.zx2c4.com/wireguard` (+ `tun/netstack`) for userspace WireGuard
 - AES-256-GCM + PBKDF2 from the standard library for credential encryption
