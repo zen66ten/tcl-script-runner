@@ -1,12 +1,7 @@
 # tcl-script-runner
 
 A small, self-contained web app for running TCL batch scripts across multiple
-remote environments without the manual SSH + `curl` dance.
-
-If you run the same batch scripts against more than one environment, you
-probably know the routine: SSH into a box, `curl` a login, `curl` the batch run,
-poll for completion, fetch the result, `curl` a logout, then repeat for the next
-environment. tcl-script-runner does that for you from a single page.
+remote environments without the manual SSH + `curl` labor.
 
 It talks to each environment over its JSON-RPC API (port 4499), establishes any
 required SSH or WireGuard tunnel first, runs the script, polls for completion,
