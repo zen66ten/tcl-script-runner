@@ -4,103 +4,196 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>tcl-script-runner</title>
-  <script>
-    // Apply saved theme before paint to avoid a flash.
-    (function () {
-      var t = localStorage.getItem("theme") || "dark";
-      document.documentElement.setAttribute("data-theme", t);
-    })();
-  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
   <style>
     :root {
-      --accent:        #e64980;
-      --accent-hover:  #f06595;
+      --bg:           #0a0a0c;
+      --bg-deep:      #060608;
+      --panel:        #121216;
+      --panel-2:      #0e0e12;
+      --border:       #2a2a33;
+      --border-soft:  #1c1c22;
+      --text:         #c9c9d4;
+      --muted:        #6e6e7a;
+      --accent:       #a974ff;
+      --accent-hover: #c39bff;
+      --accent-dim:   rgba(169, 116, 255, 0.12);
+      --green:        #6cc070;
+      --red:          #e06c6c;
+      --orange:       #e0a44c;
+      --mono: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
     }
 
-    /* ── Dark theme: neutral charcoal + pink accent ─────────────── */
+    /* ── Map PicoCSS onto the terminal palette ──────────────────── */
     [data-theme="dark"] {
-      --pico-background-color:                    #1b1b1f;
-      --pico-color:                               #c7c7cf;
-      --pico-muted-color:                         #82828c;
-      --pico-muted-border-color:                  #2c2c33;
-      --pico-border-color:                        #2c2c33;
+      --pico-background-color:                    var(--bg);
+      --pico-color:                               var(--text);
+      --pico-font-family:                         var(--mono);
+      --pico-font-family-sans-serif:              var(--mono);
+      --pico-font-family-monospace:               var(--mono);
+      --pico-muted-color:                         var(--muted);
+      --pico-muted-border-color:                  var(--border);
+      --pico-border-color:                        var(--border);
+      --pico-border-radius:                       0;
 
-      --pico-h1-color:                            #e9e9ef;
+      --pico-h1-color:                            #ece9f6;
       --pico-h2-color:                            var(--accent);
       --pico-h3-color:                            var(--accent);
-      --pico-h4-color:                            #d7d7df;
-      --pico-h5-color:                            #d7d7df;
-      --pico-h6-color:                            #d7d7df;
+      --pico-h4-color:                            #d7d3e4;
+      --pico-h5-color:                            #d7d3e4;
+      --pico-h6-color:                            #d7d3e4;
 
-      --pico-card-background-color:               #232329;
-      --pico-card-sectioning-background-color:    #1f1f24;
-      --pico-card-border-color:                   #2c2c33;
+      --pico-card-background-color:               var(--panel);
+      --pico-card-sectioning-background-color:    var(--panel-2);
+      --pico-card-border-color:                   var(--border);
 
-      --pico-form-element-background-color:       #1f1f24;
-      --pico-form-element-border-color:           #34343c;
-      --pico-form-element-color:                  #e3e3ea;
-      --pico-form-element-placeholder-color:      #6f6f78;
-      --pico-form-element-active-background-color:#1f1f24;
+      --pico-form-element-background-color:       var(--bg-deep);
+      --pico-form-element-border-color:           #34343f;
+      --pico-form-element-color:                  var(--text);
+      --pico-form-element-placeholder-color:      #565660;
+      --pico-form-element-active-background-color:var(--bg-deep);
       --pico-form-element-focus-color:            var(--accent);
 
-      --pico-code-background-color:               #232329;
-      --pico-code-color:                          #d0d0d8;
+      --pico-code-background-color:               var(--panel-2);
+      --pico-code-color:                          var(--accent-hover);
+      --pico-table-border-color:                  var(--border);
 
-      --pico-table-border-color:                  #2c2c33;
-    }
-
-    /* ── Pink primary (links + buttons), both themes ────────────── */
-    :root, [data-theme="dark"] {
+      /* Outlined purple buttons + links */
       --pico-primary:                  var(--accent);
-      --pico-primary-background:       var(--accent);
+      --pico-primary-background:       transparent;
       --pico-primary-border:           var(--accent);
       --pico-primary-hover:            var(--accent-hover);
-      --pico-primary-hover-background: var(--accent-hover);
+      --pico-primary-hover-background: var(--accent-dim);
       --pico-primary-hover-border:     var(--accent-hover);
-      --pico-primary-focus:            rgba(230, 73, 128, 0.3);
-      --pico-primary-inverse:          #ffffff;
-      --pico-primary-underline:        rgba(230, 73, 128, 0.4);
+      --pico-primary-focus:            rgba(169, 116, 255, 0.3);
+      --pico-primary-inverse:          var(--accent);
+      --pico-primary-underline:        rgba(169, 116, 255, 0.4);
     }
+
+    body { background: var(--bg); }
+
+    /* Square corners everywhere for the blocky terminal look */
+    article, button, input, select, textarea, table, [role="button"], .panel {
+      border-radius: 0 !important;
+    }
+
+    /* ── Masthead ───────────────────────────────────────────────── */
+    .masthead {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 1.6rem 1.5rem 0.4rem;
+    }
+    .brand {
+      font-family: 'Press Start 2P', var(--mono);
+      font-size: 1.85rem;
+      line-height: 1.1;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: 2px;
+      text-shadow: 0 0 18px rgba(169, 116, 255, 0.25);
+    }
+    .brand:hover { color: var(--accent); }
+    .brand-path { color: var(--muted); font-size: 0.78rem; margin-top: 0.7rem; }
+    .brand-path .lbl { color: var(--accent); }
+    .conn { font-size: 0.78rem; white-space: nowrap; }
+    .conn.idle    { color: var(--muted); }
+    .conn.running { color: var(--green); }
 
     /* ── Nav ────────────────────────────────────────────────────── */
-    nav { padding: 0.5rem 1rem; }
-    nav .logo {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.15rem;
-      text-decoration: none;
-      letter-spacing: 0.02em;
+    .topnav {
+      display: flex;
+      gap: 1.4rem;
+      padding: 0.4rem 1.5rem 0.8rem;
+      margin-bottom: 1.4rem;
+      border-bottom: 1px solid var(--border);
     }
-    nav a:not(.logo) {
-      color: var(--pico-muted-color);
+    .topnav a {
+      color: var(--muted);
       text-decoration: none;
       --pico-text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
-    nav a:not(.logo):hover,
-    nav a:not(.logo):focus { color: var(--accent); }
-    .theme-toggle {
-      background: none;
+    .topnav a:hover, .topnav a.active { color: var(--accent); }
+
+    /* ── Panels ─────────────────────────────────────────────────── */
+    .panel {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      padding: 1rem 1.25rem 1.25rem;
+      margin-bottom: 1.4rem;
+    }
+    .panel-head {
+      display: flex;
+      gap: 0.9rem;
+      align-items: baseline;
+      flex-wrap: wrap;
+      border-bottom: 1px dashed var(--border);
+      padding-bottom: 0.6rem;
+      margin-bottom: 0.9rem;
+    }
+    .panel-head strong { letter-spacing: 0.06em; color: var(--accent); }
+    .muted { color: var(--muted); }
+
+    /* ── API monitor ────────────────────────────────────────────── */
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+    .toolbar button { width: auto; margin: 0; padding: 0.25rem 0.9rem; font-size: 0.8rem; }
+    .toolbar .follow { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; margin: 0; }
+    .toolbar .poll-note { font-size: 0.75rem; margin-left: auto; }
+
+    .apilog {
+      max-height: 62vh;
+      overflow: auto;
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.5rem;
+      font-size: 0.8rem;
+    }
+    .apilog .entry { padding: 0.4rem 0.45rem; border-bottom: 1px solid var(--border-soft); }
+    .apilog .entry:last-child { border-bottom: none; }
+    .apilog .entry-meta { display: flex; gap: 0.7rem; align-items: center; flex-wrap: wrap; }
+    .apilog .ts     { color: var(--muted); }
+    .apilog .dir    { font-weight: 700; }
+    .apilog .method { color: var(--text); font-weight: 700; }
+    .apilog .id     { color: var(--muted); }
+    .apilog .ep     { color: var(--muted); font-size: 0.72rem; }
+    .apilog pre {
+      margin: 0.3rem 0 0;
+      padding: 0.25rem 0 0.25rem 0.7rem;
       border: none;
-      padding: 0.2rem 0.4rem;
-      margin: 0;
-      width: auto;
-      cursor: pointer;
-      color: var(--pico-muted-color);
-      line-height: 1;
+      border-left: 2px solid var(--border);
+      background: transparent;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.77rem;
+      color: #b6b6c2;
     }
-    .theme-toggle:hover { color: var(--accent); }
+    .apilog .empty { padding: 1rem 0.5rem; }
+    .dir-req  .dir { color: var(--accent); }
+    .dir-resp .dir { color: var(--green); }
+    .dir-err  .dir { color: var(--red); }
+    .dir-err  pre  { border-left-color: var(--red); color: #e8a3a3; }
 
     /* ── Misc ───────────────────────────────────────────────────── */
-    .status-ok   { color: var(--pico-color-green-500); }
-    .status-fail { color: var(--pico-color-red-500); }
-    .status-err  { color: var(--pico-color-orange-500); }
+    .status-ok   { color: var(--green); }
+    .status-fail { color: var(--red); }
+    .status-err  { color: var(--orange); }
     pre {
       white-space: pre-wrap;
       word-break: break-word;
       font-size: 0.85em;
-      border: 1px solid var(--pico-border-color);
+      border: 1px solid var(--border);
       border-left: 3px solid var(--accent);
     }
     .htmx-indicator { display: none; }
@@ -109,37 +202,25 @@
   </style>
 </head>
 <body hx-boost="true">
-  <nav class="container-fluid">
-    <ul>
-      <li><a href="/" class="logo">tcl-script-runner</a></li>
-      <li>
-        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark">
-          <span id="theme-icon">☾</span>
-        </button>
-      </li>
-    </ul>
-    <ul>
-      <li><a href="/">Dashboard</a></li>
-      <li><a href="/environments">Environments</a></li>
-      <li><a href="/jobs">Job Log</a></li>
-    </ul>
+  <header class="masthead container-fluid">
+    <div>
+      <a href="/" class="brand">TCL RUNNER</a>
+      <div class="brand-path"><span class="lbl">Local</span>&nbsp; c:\Users\PawelKrainski\Code\becs-runner</div>
+    </div>
+    <div hx-get="/status" hx-trigger="load, every 3s" hx-swap="innerHTML show:no-scroll">
+      <span class="conn idle">○ IDLE</span>
+    </div>
+  </header>
+
+  <nav class="topnav container-fluid">
+    <a href="/">Dashboard</a>
+    <a href="/environments">Environments</a>
+    <a href="/jobs">Job Log</a>
+    <a href="/api-monitor">API Monitor</a>
   </nav>
+
   <main class="container">
     {{block "content" .}}{{end}}
   </main>
-  <script>
-    function applyThemeIcon() {
-      var dark = document.documentElement.getAttribute("data-theme") !== "light";
-      var icon = document.getElementById("theme-icon");
-      if (icon) icon.textContent = dark ? "☾" : "☀";
-    }
-    function toggleTheme() {
-      var next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
-      document.documentElement.setAttribute("data-theme", next);
-      localStorage.setItem("theme", next);
-      applyThemeIcon();
-    }
-    applyThemeIcon();
-  </script>
 </body>
 </html>{{end}}

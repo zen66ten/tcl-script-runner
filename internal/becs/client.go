@@ -7,8 +7,16 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"time"
 )
+
+// passwordRe masks password values so credentials never reach the API monitor.
+var passwordRe = regexp.MustCompile(`("password"\s*:\s*")(?:\\.|[^"\\])*(")`)
+
+func redact(s string) string {
+	return passwordRe.ReplaceAllString(s, `${1}***${2}`)
+}
 
 // Client talks to a single BECS JSON-RPC endpoint (spec §3.3).
 // Use NewClient to construct. After Login the SessionID field is set and
@@ -80,6 +88,7 @@ func (c *Client) call(ctx context.Context, method string, params any, out any) e
 		return fmt.Errorf("marshal: %w", err)
 	}
 	slog.Info("rpc →", "method", method, "id", c.nextID, "body", string(body))
+	Log.Record(LogEntry{Dir: "→", Method: method, ID: c.nextID, Endpoint: c.endpoint, Body: redact(string(body))})
 
 	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint, bytes.NewReader(body))
 	if err != nil {
@@ -90,12 +99,14 @@ func (c *Client) call(ctx context.Context, method string, params any, out any) e
 	httpResp, err := c.http.Do(httpReq)
 	if err != nil {
 		slog.Info("rpc ✗", "method", method, "err", err)
+		Log.Record(LogEntry{Dir: "✗", Method: method, ID: c.nextID, Endpoint: c.endpoint, Body: "http error: " + err.Error()})
 		return fmt.Errorf("http: %w", err)
 	}
 	defer httpResp.Body.Close()
 
 	if httpResp.StatusCode != http.StatusOK {
 		slog.Info("rpc ✗", "method", method, "http_status", httpResp.StatusCode)
+		Log.Record(LogEntry{Dir: "✗", Method: method, ID: c.nextID, Endpoint: c.endpoint, Body: fmt.Sprintf("http status %d", httpResp.StatusCode)})
 		return fmt.Errorf("http status %d", httpResp.StatusCode)
 	}
 
@@ -106,10 +117,12 @@ func (c *Client) call(ctx context.Context, method string, params any, out any) e
 
 	if rpcResp.Error != nil {
 		slog.Info("rpc ✗", "method", method, "rpc_err", rpcResp.Error.Code, "msg", rpcResp.Error.Message)
+		Log.Record(LogEntry{Dir: "✗", Method: method, ID: c.nextID, Endpoint: c.endpoint, Body: fmt.Sprintf("rpc error %d: %s", rpcResp.Error.Code, rpcResp.Error.Message)})
 		return fmt.Errorf("rpc error %d: %s", rpcResp.Error.Code, rpcResp.Error.Message)
 	}
 
 	slog.Info("rpc ←", "method", method, "result", string(rpcResp.Result))
+	Log.Record(LogEntry{Dir: "←", Method: method, ID: c.nextID, Endpoint: c.endpoint, Body: redact(string(rpcResp.Result))})
 
 	if out != nil {
 		if err := json.Unmarshal(rpcResp.Result, out); err != nil {

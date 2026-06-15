@@ -13,6 +13,7 @@
       <th>Name</th>
       <th>Host</th>
       <th>Tunnel</th>
+      <th>Labels</th>
       <th>Enabled</th>
       <th></th>
     </tr>
@@ -23,6 +24,7 @@
       <td>{{.Name}}</td>
       <td>{{.BECSHost}}:{{.BECSPort}}</td>
       <td>{{.TunnelType}}</td>
+      <td>{{range $k, $v := .Labels}}<code>{{$k}}={{$v}}</code> {{else}}—{{end}}</td>
       <td>{{if .Enabled}}✓{{else}}—{{end}}</td>
       <td>
         <a href="/environments/{{.Name}}/edit">Edit</a>

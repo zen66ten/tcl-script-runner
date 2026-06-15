@@ -1,0 +1,13 @@
+{{define "apilog"}}{{if .}}{{range .}}<div class="entry dir-{{.DirClass}}">
+  <div class="entry-meta">
+    <span class="ts">{{.TS}}</span>
+    <span class="dir">{{.Dir}}</span>
+    <span class="method">{{.Method}}</span>
+    {{if .ID}}<span class="id">#{{.ID}}</span>{{end}}
+    <span class="ep">{{.Endpoint}}</span>
+  </div>
+  <pre>{{.Body}}</pre>
+</div>
+{{end}}{{else}}<div class="empty muted">No API traffic yet. Run a job to see JSON-RPC requests and responses stream in here.</div>{{end}}{{end}}
+
+{{define "status"}}{{if .}}<span class="conn running">● RUNNING</span>{{else}}<span class="conn idle">○ IDLE</span>{{end}}{{end}}

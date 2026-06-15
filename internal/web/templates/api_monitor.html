@@ -1,0 +1,37 @@
+{{define "content"}}
+<div class="panel">
+  <div class="panel-head">
+    <strong>API MONITOR</strong>
+    <span class="muted">live JSON-RPC traffic to BECS — requests, responses, errors</span>
+  </div>
+
+  <div class="toolbar">
+    <button class="outline secondary" hx-post="/api-log/clear" hx-target="#apilog" hx-swap="innerHTML show:no-scroll">Clear</button>
+    <label class="follow"><input type="checkbox" id="follow" checked> follow tail</label>
+    <span class="muted poll-note">refreshing every 1s</span>
+  </div>
+
+  <div id="apilog" class="apilog"
+       hx-get="/api-log" hx-trigger="load, every 1s" hx-swap="innerHTML show:no-scroll"></div>
+</div>
+
+<script>
+  var logEl = document.getElementById('apilog');
+  var follow = document.getElementById('follow');
+
+  // After each swap: scroll to bottom only when follow tail is on.
+  document.body.addEventListener('htmx:afterSwap', function (e) {
+    if (e.target && e.target.id === 'apilog' && follow && follow.checked) {
+      e.target.scrollTop = e.target.scrollHeight;
+    }
+  });
+
+  // When the user manually scrolls up, turn off follow tail automatically.
+  if (logEl) {
+    logEl.addEventListener('scroll', function () {
+      var atBottom = logEl.scrollHeight - logEl.scrollTop - logEl.clientHeight < 30;
+      if (!atBottom && follow) follow.checked = false;
+    });
+  }
+</script>
+{{end}}

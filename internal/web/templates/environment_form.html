@@ -8,7 +8,7 @@
     <header><strong>BECS Connection</strong></header>
     <div class="grid">
       <label>Name
-        <input type="text" name="name" value="{{.Env.Name}}" required {{if not .IsNew}}readonly{{end}}>
+        <input type="text" name="name" value="{{.Env.Name}}" required>
       </label>
       <label>Enabled
         <input type="checkbox" name="enabled" {{if .Env.Enabled}}checked{{end}}>
@@ -119,6 +119,21 @@
     </section>
   </article>
 
+  <article>
+    <header><strong>Labels</strong></header>
+    <p><small>Optional key/value tags for grouping, e.g. <code>schedule</code> = <code>monthly</code>.</small></p>
+    <div id="labels-container">
+      {{range $k, $v := .Env.Labels}}
+      <div class="grid label-row">
+        <input type="text" name="label_key" value="{{$k}}" placeholder="key">
+        <input type="text" name="label_value" value="{{$v}}" placeholder="value">
+        <button type="button" class="secondary outline" onclick="this.closest('.label-row').remove()">Remove</button>
+      </div>
+      {{end}}
+    </div>
+    <button type="button" class="secondary outline" onclick="addLabelRow()">+ Add label</button>
+  </article>
+
   <div style="display:flex; gap:1rem">
     <button type="submit">{{if .IsNew}}Create{{else}}Save{{end}}</button>
     <a href="/environments" role="button" class="secondary outline">Cancel</a>
@@ -129,6 +144,16 @@
 function setTunnel(v) {
   document.getElementById('ssh-section').style.display = v === 'ssh' ? '' : 'none';
   document.getElementById('wg-section').style.display  = v === 'wireguard' ? '' : 'none';
+}
+function addLabelRow() {
+  const c = document.getElementById('labels-container');
+  const row = document.createElement('div');
+  row.className = 'grid label-row';
+  row.innerHTML =
+    '<input type="text" name="label_key" placeholder="key">' +
+    '<input type="text" name="label_value" placeholder="value">' +
+    '<button type="button" class="secondary outline" onclick="this.closest(\'.label-row\').remove()">Remove</button>';
+  c.appendChild(row);
 }
 window.addEventListener('DOMContentLoaded', function() {
   setTunnel(document.getElementById('tunnel_type').value);

@@ -16,5 +16,10 @@ func (a *App) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /jobs/{id}", a.jobDetail)
 	mux.HandleFunc("GET /jobs/{id}/runs/{env}/download", a.downloadRun)
 
+	mux.HandleFunc("GET /api-monitor", a.apiMonitor)
+	mux.HandleFunc("GET /api-log", a.apiLogFragment)
+	mux.HandleFunc("POST /api-log/clear", a.apiLogClear)
+	mux.HandleFunc("GET /status", a.statusFragment)
+
 	mux.HandleFunc("POST /run", a.runJob)
 }

@@ -1,8 +1,10 @@
 package web
 
 import (
+	"bytes"
 	"context"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log/slog"
@@ -26,6 +28,7 @@ type App struct {
 	dataDir    string
 	passphrase string
 	tmpls      map[string]*template.Template
+	frag       *template.Template // layout-less fragments (api log, status)
 }
 
 // NewApp creates the App and pre-parses all templates.
@@ -78,7 +81,7 @@ func (a *App) loadTemplates() error {
 		},
 	}
 
-	pages := []string{"dashboard", "environments", "environment_form", "job_log", "job_detail"}
+	pages := []string{"dashboard", "environments", "environment_form", "job_log", "job_detail", "api_monitor"}
 	a.tmpls = make(map[string]*template.Template, len(pages))
 	for _, page := range pages {
 		t, err := template.New("").Funcs(funcs).ParseFS(templateFiles,
@@ -90,6 +93,12 @@ func (a *App) loadTemplates() error {
 		}
 		a.tmpls[page] = t
 	}
+
+	frag, err := template.New("").Funcs(funcs).ParseFS(templateFiles, "templates/fragments.html")
+	if err != nil {
+		return fmt.Errorf("parse fragments: %w", err)
+	}
+	a.frag = frag
 	return nil
 }
 
@@ -288,6 +297,60 @@ func (a *App) downloadRun(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(run.Output))
 }
 
+// --- API Monitor ---
+
+type apiLogView struct {
+	TS, Dir, DirClass, Method, Endpoint, Body string
+	ID                                        int
+}
+
+func toLogView(e becs.LogEntry) apiLogView {
+	cls := "resp"
+	switch e.Dir {
+	case "→":
+		cls = "req"
+	case "✗":
+		cls = "err"
+	}
+	return apiLogView{
+		TS:       e.Time.Local().Format("15:04:05.000"),
+		Dir:      e.Dir,
+		DirClass: cls,
+		Method:   e.Method,
+		ID:       e.ID,
+		Endpoint: e.Endpoint,
+		Body:     prettyJSON(e.Body),
+	}
+}
+
+func (a *App) apiMonitor(w http.ResponseWriter, r *http.Request) {
+	a.render(w, "api_monitor", nil)
+}
+
+func (a *App) apiLogFragment(w http.ResponseWriter, r *http.Request) {
+	entries := becs.Log.Entries()
+	views := make([]apiLogView, 0, len(entries))
+	for _, e := range entries {
+		views = append(views, toLogView(e))
+	}
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := a.frag.ExecuteTemplate(w, "apilog", views); err != nil {
+		slog.Error("render apilog", "err", err)
+	}
+}
+
+func (a *App) apiLogClear(w http.ResponseWriter, r *http.Request) {
+	becs.Log.Clear()
+	a.apiLogFragment(w, r)
+}
+
+func (a *App) statusFragment(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := a.frag.ExecuteTemplate(w, "status", a.run.IsBusy()); err != nil {
+		slog.Error("render status", "err", err)
+	}
+}
+
 // --- Run ---
 
 func (a *App) runJob(w http.ResponseWriter, r *http.Request) {
@@ -340,6 +403,7 @@ func parseEnvForm(r *http.Request) config.Environment {
 		TunnelType: config.TunnelType(r.FormValue("tunnel_type")),
 		Enabled:    r.FormValue("enabled") == "on",
 		Notes:      r.FormValue("notes"),
+		Labels:     parseLabels(r),
 		SSH: config.SSHTunnelConfig{
 			Host:       r.FormValue("ssh_host"),
 			Port:       intField(r, "ssh_port", 22),
@@ -394,6 +458,39 @@ func (a *App) maybeEncrypt(newVal, existing string) (string, error) {
 		return existing, nil
 	}
 	return config.Encrypt(newVal, a.passphrase)
+}
+
+// parseLabels reads parallel label_key / label_value form fields into a map,
+// pairing them by submission order and skipping rows with an empty key.
+// Returns nil if there are no labels so the YAML omitempty tag drops the key.
+func parseLabels(r *http.Request) map[string]string {
+	keys := r.Form["label_key"]
+	vals := r.Form["label_value"]
+	labels := make(map[string]string)
+	for i, k := range keys {
+		k = strings.TrimSpace(k)
+		if k == "" {
+			continue
+		}
+		v := ""
+		if i < len(vals) {
+			v = strings.TrimSpace(vals[i])
+		}
+		labels[k] = v
+	}
+	if len(labels) == 0 {
+		return nil
+	}
+	return labels
+}
+
+// prettyJSON indents a compact JSON string for display; non-JSON is returned as-is.
+func prettyJSON(s string) string {
+	var buf bytes.Buffer
+	if err := json.Indent(&buf, []byte(s), "", "  "); err != nil {
+		return s
+	}
+	return buf.String()
 }
 
 func intField(r *http.Request, name string, def int) int {

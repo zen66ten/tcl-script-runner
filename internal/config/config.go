@@ -59,6 +59,9 @@ type Environment struct {
 	WireGuard  WireGuardConfig `yaml:"wireguard,omitempty"`
 	Enabled    bool            `yaml:"enabled"`
 	Notes      string          `yaml:"notes,omitempty"`
+	// Labels are arbitrary key/value tags for grouping environments,
+	// e.g. {"schedule": "monthly"}. Stored in plaintext; not secret.
+	Labels map[string]string `yaml:"labels,omitempty"`
 }
 
 // Config is the top-level structure serialized to/from config.yaml (spec 4.1).
