@@ -39,9 +39,9 @@
     <header><strong>Tunnel</strong></header>
     <label>Type
       <select name="tunnel_type" id="tunnel_type" onchange="setTunnel(this.value)">
-        <option value="none"      {{if eq .Env.TunnelType "none"}}selected{{end}}>None</option>
-        <option value="ssh"       {{if eq .Env.TunnelType "ssh"}}selected{{end}}>SSH</option>
-        <option value="wireguard" {{if eq .Env.TunnelType "wireguard"}}selected{{end}}>WireGuard</option>
+        <option value="none"        {{if eq .Env.TunnelType "none"}}selected{{end}}>None</option>
+        <option value="ssh"         {{if eq .Env.TunnelType "ssh"}}selected{{end}}>SSH</option>
+        <option value="wireguard"   {{if eq .Env.TunnelType "wireguard"}}selected{{end}}>WireGuard</option>
       </select>
     </label>
 
@@ -117,6 +117,7 @@
         </label>
       </div>
     </section>
+
   </article>
 
   <article>
@@ -142,7 +143,7 @@
 
 <script>
 function setTunnel(v) {
-  document.getElementById('ssh-section').style.display = v === 'ssh' ? '' : 'none';
+  document.getElementById('ssh-section').style.display = v === 'ssh'       ? '' : 'none';
   document.getElementById('wg-section').style.display  = v === 'wireguard' ? '' : 'none';
 }
 function addLabelRow() {
