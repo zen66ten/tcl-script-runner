@@ -41,6 +41,36 @@ environments:
       remote_port: 4499
     enabled: false
 
+  # --- Through a jump host (OpenSSH "ProxyJump") with a passphrase-protected key ---
+  # Based on an "ssh cell1" config:
+  #   Host cell1
+  #       HostName 10.18.106.6
+  #       User becs.support
+  #       IdentityFile pxc.pem
+  #       ProxyJump pfsw-jump            (HostName 10.18.106.7)
+  # The LocalForward in that config pointed at :8089 (the HTTPS web GUI). This
+  # tool talks to the JSON-RPC API instead, which is plain HTTP on :4499.
+  - name: example-ssh-jump
+    becs_host: 127.0.0.1     # the local end of the forward
+    becs_port: 14499         # must match local_port below
+    username: root
+    password: ""
+    tunnel_type: ssh
+    ssh_tunnel:
+      ssh_host: 10.18.106.6        # cell1: the final host we forward from
+      ssh_port: 22
+      ssh_user: becs.support
+      ssh_auth_method: key
+      ssh_key_path: C:\Users\you\pxc.pem
+      ssh_key_passphrase: ""       # set via the UI (stored encrypted) if the key is encrypted
+      ssh_jump_host: 10.18.106.7   # pfsw-jump; same key/passphrase reused for this hop
+      ssh_jump_port: 22
+      ssh_jump_user: becs.support  # optional; defaults to ssh_user
+      local_port: 14499
+      remote_host: 10.18.106.6     # JSON-RPC API host as seen from cell1
+      remote_port: 4499            # BECS ExtAPI (not the :8089 web GUI)
+    enabled: false
+
   # --- Through a userspace WireGuard tunnel ---
   - name: example-wireguard
     becs_host: 10.0.0.10

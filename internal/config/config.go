@@ -22,15 +22,23 @@ const (
 // ssh_key_path is a path on the machine running tcl-script-runner; use filepath when
 // handling it to stay Windows-compatible.
 type SSHTunnelConfig struct {
-	Host       string `yaml:"ssh_host"`
-	Port       int    `yaml:"ssh_port"`        // default 22
-	User       string `yaml:"ssh_user"`
-	AuthMethod string `yaml:"ssh_auth_method"` // "key" or "password"
-	KeyPath    string `yaml:"ssh_key_path"`    // path to private key; filepath-safe
-	Password   string `yaml:"ssh_password"`    // encrypted at rest; only used when AuthMethod == "password"
-	LocalPort  int    `yaml:"local_port"`      // local port to bind for the forward
-	RemoteHost string `yaml:"remote_host"`     // BECS host as seen from the jump host
-	RemotePort int    `yaml:"remote_port"`     // default 4499
+	Host          string `yaml:"ssh_host"`                    // final SSH server we forward from
+	Port          int    `yaml:"ssh_port"`                    // default 22
+	User          string `yaml:"ssh_user"`
+	AuthMethod    string `yaml:"ssh_auth_method"`             // "key" or "password"
+	KeyPath       string `yaml:"ssh_key_path"`                // path to private key; filepath-safe
+	KeyPassphrase string `yaml:"ssh_key_passphrase,omitempty"` // encrypted at rest; for passphrase-protected keys
+	Password      string `yaml:"ssh_password"`                // encrypted at rest; only used when AuthMethod == "password"
+	LocalPort     int    `yaml:"local_port"`                  // local port to bind for the forward
+	RemoteHost    string `yaml:"remote_host"`                 // forward target as seen from Host
+	RemotePort    int    `yaml:"remote_port"`                 // default 4499
+
+	// Optional ProxyJump hop. When JumpHost is set, the tunnel dials JumpHost
+	// first, then opens the connection to Host through it (matching an OpenSSH
+	// "ProxyJump" directive). The same key/passphrase is reused for both hops.
+	JumpHost string `yaml:"ssh_jump_host,omitempty"`
+	JumpPort int    `yaml:"ssh_jump_port,omitempty"` // default 22
+	JumpUser string `yaml:"ssh_jump_user,omitempty"` // defaults to User if blank
 }
 
 // WireGuardConfig holds parameters for a userspace WireGuard tunnel (spec 3.2.2).

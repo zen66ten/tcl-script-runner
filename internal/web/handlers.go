@@ -413,6 +413,9 @@ func parseEnvForm(r *http.Request) config.Environment {
 			LocalPort:  intField(r, "local_port", 0),
 			RemoteHost: r.FormValue("remote_host"),
 			RemotePort: intField(r, "remote_port", 4499),
+			JumpHost:   strings.TrimSpace(r.FormValue("ssh_jump_host")),
+			JumpPort:   intField(r, "ssh_jump_port", 0),
+			JumpUser:   strings.TrimSpace(r.FormValue("ssh_jump_user")),
 		},
 		WireGuard: config.WireGuardConfig{
 			PeerPublicKey:       r.FormValue("wg_peer_public_key"),
@@ -435,6 +438,12 @@ func (a *App) encryptTunnelCreds(r *http.Request, env *config.Environment, exist
 	env.SSH.Password, err = a.maybeEncrypt(r.FormValue("ssh_password"), existing.SSH.Password)
 	if err != nil {
 		return fmt.Errorf("encrypt SSH password: %w", err)
+	}
+
+	// SSH key passphrase (for passphrase-protected private keys)
+	env.SSH.KeyPassphrase, err = a.maybeEncrypt(r.FormValue("ssh_key_passphrase"), existing.SSH.KeyPassphrase)
+	if err != nil {
+		return fmt.Errorf("encrypt SSH key passphrase: %w", err)
 	}
 
 	// WireGuard private key

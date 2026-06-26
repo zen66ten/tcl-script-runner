@@ -23,7 +23,7 @@
         {{if .Enabled}}
         <label>
           <input type="checkbox" name="env" value="{{.Name}}" checked>
-          {{.Name}}
+          {{.Name}}{{if .Labels}} — {{range $k, $v := .Labels}}<span style="opacity:.6;font-size:.85em">{{$k}}: {{$v}}</span> {{end}}{{end}}
         </label>
         {{end}}
         {{end}}

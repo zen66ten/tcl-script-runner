@@ -169,15 +169,24 @@ func (r *Runner) buildTunnel(env *config.Environment) (tunnel.Tunnel, error) {
 		return nil, nil
 
 	case config.TunnelSSH:
-		sshPass := ""
-		if env.SSH.AuthMethod == "password" {
+		sshPass, keyPassphrase := "", ""
+		switch env.SSH.AuthMethod {
+		case "password":
 			var err error
 			sshPass, err = config.Decrypt(env.SSH.Password, r.passphrase)
 			if err != nil {
 				return nil, fmt.Errorf("decrypt SSH password: %w", err)
 			}
+		case "key":
+			if env.SSH.KeyPassphrase != "" {
+				var err error
+				keyPassphrase, err = config.Decrypt(env.SSH.KeyPassphrase, r.passphrase)
+				if err != nil {
+					return nil, fmt.Errorf("decrypt SSH key passphrase: %w", err)
+				}
+			}
 		}
-		return tunnel.NewSSH(env.SSH, sshPass), nil
+		return tunnel.NewSSH(env.SSH, sshPass, keyPassphrase), nil
 
 	case config.TunnelWireGuard:
 		privKey, err := config.Decrypt(env.WireGuard.PrivateKey, r.passphrase)

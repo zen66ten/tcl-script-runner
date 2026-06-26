@@ -48,17 +48,17 @@
     <section id="ssh-section">
       <h4>SSH Tunnel</h4>
       <div class="grid">
-        <label>Jump Host
-          <input type="text" name="ssh_host" value="{{.Env.SSH.Host}}">
+        <label>SSH Host
+          <input type="text" name="ssh_host" value="{{.Env.SSH.Host}}" placeholder="final host we forward from">
         </label>
         <label>Port
           <input type="number" name="ssh_port" value="{{.Env.SSH.Port}}" placeholder="22">
         </label>
-      </div>
-      <div class="grid">
         <label>SSH User
           <input type="text" name="ssh_user" value="{{.Env.SSH.User}}">
         </label>
+      </div>
+      <div class="grid">
         <label>Auth Method
           <select name="ssh_auth_method">
             <option value="password" {{if ne .Env.SSH.AuthMethod "key"}}selected{{end}}>Password</option>
@@ -70,11 +70,33 @@
         </label>
       </div>
       <div class="grid">
+        <label>Key Path
+          <input type="text" name="ssh_key_path" value="{{.Env.SSH.KeyPath}}" placeholder="C:\Users\you\key.pem (key auth only)">
+        </label>
+        <label>Key Passphrase
+          <input type="password" name="ssh_key_passphrase" placeholder="{{if not .IsNew}}leave blank to keep existing{{else}}if the key is encrypted{{end}}">
+        </label>
+      </div>
+      <hr>
+      <p><small>Optional jump host (OpenSSH <code>ProxyJump</code>). Leave blank for a direct connection. The same key/passphrase is reused for the jump.</small></p>
+      <div class="grid">
+        <label>Jump Host
+          <input type="text" name="ssh_jump_host" value="{{.Env.SSH.JumpHost}}" placeholder="leave blank for none">
+        </label>
+        <label>Jump Port
+          <input type="number" name="ssh_jump_port" value="{{if .Env.SSH.JumpPort}}{{.Env.SSH.JumpPort}}{{end}}" placeholder="22">
+        </label>
+        <label>Jump User
+          <input type="text" name="ssh_jump_user" value="{{.Env.SSH.JumpUser}}" placeholder="defaults to SSH User">
+        </label>
+      </div>
+      <hr>
+      <div class="grid">
         <label>Local Port
           <input type="number" name="local_port" value="{{.Env.SSH.LocalPort}}" placeholder="e.g. 14499">
         </label>
         <label>Remote Host
-          <input type="text" name="remote_host" value="{{.Env.SSH.RemoteHost}}" placeholder="BECS host as seen from jump">
+          <input type="text" name="remote_host" value="{{.Env.SSH.RemoteHost}}" placeholder="forward target as seen from SSH Host">
         </label>
         <label>Remote Port
           <input type="number" name="remote_port" value="{{.Env.SSH.RemotePort}}" placeholder="4499">

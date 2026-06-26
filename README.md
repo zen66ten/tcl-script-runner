@@ -75,9 +75,12 @@ a time. Three modes:
 
 - **SSH:** a port-forward built with `golang.org/x/crypto/ssh` (pure Go, no
   shelling out to a system `ssh` binary). It binds a local port and forwards
-  `localhost:<local_port>` to the jump host and on to
+  `localhost:<local_port>` to the SSH host and on to
   `<remote_host>:<remote_port>`; the API client then just talks to the local
-  end.
+  end. Supports password auth, key auth (including passphrase-protected keys),
+  and an optional **ProxyJump** hop: when a jump host is configured, the tool
+  dials the jump first and opens the connection to the final host through it,
+  reusing the same key/passphrase for both hops automatically.
 
 - **WireGuard:** a fully **userspace** tunnel via
   [`wireguard-go`](https://git.zx2c4.com/wireguard-go/)'s `tun/netstack`
@@ -89,8 +92,9 @@ a time. Three modes:
   tcl-script-runner's own API traffic goes through the tunnel; your machine's
   routing table is never touched, so nothing else on the host is affected.
 
-Tunnel credentials (SSH passwords, WireGuard private/preshared keys) are
-encrypted at rest the same way the API login passwords are.
+Tunnel credentials (SSH passwords, SSH key passphrases, WireGuard
+private/preshared keys) are encrypted at rest the same way the API login
+passwords are.
 
 ## Requirements
 
