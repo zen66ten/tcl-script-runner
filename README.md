@@ -7,6 +7,8 @@ It talks to each environment over its JSON-RPC API (port 4499), establishes any
 required SSH or WireGuard tunnel first, runs the script, polls for completion,
 and stores each result as a job log you can review later.
 
+![Dashboard](static/dashboard.png)
+
 ## What it does
 
 - **Environment management:** add/edit/remove target environments (host, port,
